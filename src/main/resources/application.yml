@@ -22,4 +22,5 @@ app:
     secret: ${APP_JWT_SECRET:sivet-super-secret-key-change-me-please-0123456789-abcdef}
     expiration-ms: 28800000
   cors:
-    allowed-origin: ${APP_CORS_ORIGIN:http://localhost:4200}
+    # Admite lista separada por comas. El origen de Netlify se añade siempre por defecto en SecurityConfig.
+    allowed-origin: ${APP_CORS_ORIGIN:http://localhost:4200,https://idyllic-macaron-1fc871.netlify.app}

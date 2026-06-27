@@ -22,6 +22,8 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -31,6 +33,9 @@ import java.util.List;
 @Configuration
 @EnableMethodSecurity // habilita @PreAuthorize (p. ej. backoffice SUPERADMIN)
 public class SecurityConfig {
+
+    /** Origen del frontend de Netlify, permitido siempre por defecto. */
+    private static final String NETLIFY_ORIGIN = "https://idyllic-macaron-1fc871.netlify.app";
 
     @Value("${app.cors.allowed-origin}")
     private String allowedOrigin;
@@ -51,10 +56,19 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
+                        // Preflight CORS: nunca lleva token, debe pasar sin autenticación.
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        // Recursos estáticos de Swagger/springdoc: permitAll absoluto para
+                        // evitar que Spring Security rompa su carga (HTTP 500).
+                        .requestMatchers(
+                                "/v3/api-docs/**",
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/swagger-resources/**",
+                                "/webjars/**").permitAll()
                         // Públicos: login y alta de clínica (onboarding del tenant).
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/clinicas").permitAll()
-                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         // Todo lo demás requiere JWT válido.
                         .anyRequest().authenticated())
                 .exceptionHandling(eh -> eh.authenticationEntryPoint(unauthorizedEntryPoint()))
@@ -72,10 +86,23 @@ public class SecurityConfig {
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
+        // Orígenes permitidos: los configurados en ${APP_CORS_ORIGIN}
+        // (admite lista separada por comas) más el frontend de Netlify por defecto.
+        List<String> origins = new ArrayList<>();
+        if (allowedOrigin != null && !allowedOrigin.isBlank()) {
+            Arrays.stream(allowedOrigin.split(","))
+                    .map(String::trim)
+                    .filter(o -> !o.isEmpty())
+                    .forEach(origins::add);
+        }
+        if (!origins.contains(NETLIFY_ORIGIN)) {
+            origins.add(NETLIFY_ORIGIN);
+        }
+
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(allowedOrigin));
+        config.setAllowedOrigins(origins);
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Tenant-ID"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", "X-Tenant-ID", "*"));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
