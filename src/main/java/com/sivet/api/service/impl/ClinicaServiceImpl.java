@@ -1,6 +1,7 @@
 package com.sivet.api.service.impl;
 
 import com.sivet.api.domain.entity.Clinica;
+import com.sivet.api.dto.request.ClinicaPatchRequest;
 import com.sivet.api.dto.request.ClinicaRequest;
 import com.sivet.api.dto.response.ClinicaResponse;
 import com.sivet.api.exception.ResourceNotFoundException;
@@ -38,6 +39,14 @@ public class ClinicaServiceImpl implements ClinicaService {
     public ClinicaResponse actualizar(UUID id, ClinicaRequest request) {
         Clinica clinica = getOrThrow(id);
         clinicaMapper.updateEntity(clinica, request);
+        return clinicaMapper.toResponse(clinicaRepository.save(clinica));
+    }
+
+    @Override
+    @Transactional
+    public ClinicaResponse actualizarParcial(UUID id, ClinicaPatchRequest request) {
+        Clinica clinica = getOrThrow(id);
+        clinicaMapper.patchEntity(clinica, request);
         return clinicaMapper.toResponse(clinicaRepository.save(clinica));
     }
 

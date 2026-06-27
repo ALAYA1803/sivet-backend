@@ -69,7 +69,13 @@ public class TenantAuthenticationFilter extends OncePerRequestFilter {
     /** Rutas exentas de la validación del header de tenant. */
     private boolean requiereTenant(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return !(path.startsWith("/auth") || path.startsWith("/clinicas"));
+        // - /auth, /clinicas: login y (re)carga del propio tenant.
+        // - /admin-sivet: backoffice del SUPERADMIN, opera fuera de un tenant concreto.
+        // - cambiar-password-inicial: opera sobre la cuenta del token, no sobre el tenant.
+        return !(path.startsWith("/auth")
+                || path.startsWith("/clinicas")
+                || path.startsWith("/admin-sivet")
+                || path.equals("/usuarios/cambiar-password-inicial"));
     }
 
     private void rechazar(HttpServletResponse response, String mensaje) throws IOException {

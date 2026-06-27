@@ -1,0 +1,12 @@
+# El jar se compila DENTRO de la imagen; no enviamos el target/ del host.
+target/
+
+# IDE / SO
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Git
+.git/
+.gitignore

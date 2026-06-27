@@ -45,6 +45,13 @@ public class Usuario {
     @Column(nullable = false)
     private String rol;
 
+    /**
+     * Marca a un usuario que debe cambiar su contraseña antes de operar (p. ej. tras el
+     * onboarding B2B, que entrega una clave temporal). Por defecto {@code false}.
+     */
+    @Column(nullable = false, columnDefinition = "boolean default false")
+    private boolean requiereCambioPassword = false;
+
     /** Tenant del usuario (FK → clinicas.id). */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "clinica_id", nullable = false)

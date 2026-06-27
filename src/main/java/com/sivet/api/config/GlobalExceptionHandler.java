@@ -2,12 +2,14 @@ package com.sivet.api.config;
 
 import com.sivet.api.exception.BusinessException;
 import com.sivet.api.exception.ConflictException;
+import com.sivet.api.exception.ForbiddenException;
 import com.sivet.api.exception.InvalidCredentialsException;
 import com.sivet.api.exception.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -46,6 +48,19 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleCredentials(
             InvalidCredentialsException ex, HttpServletRequest request) {
         return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), request);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Map<String, Object>> handleForbidden(
+            ForbiddenException ex, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), request);
+    }
+
+    /** Autorización por método (@PreAuthorize) denegada: rol insuficiente ⇒ 403. */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String, Object>> handleAccessDenied(
+            AccessDeniedException ex, HttpServletRequest request) {
+        return build(HttpStatus.FORBIDDEN, "No tiene permisos para realizar esta operación", request);
     }
 
     /** Errores de validación de DTOs (@Valid): 400 con detalle por campo. */

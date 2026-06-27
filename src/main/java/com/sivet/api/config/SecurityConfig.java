@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -28,6 +29,7 @@ import java.util.List;
  * Cadena de filtros: JWT (autenticación) → Tenant (aislamiento) → autorización.
  */
 @Configuration
+@EnableMethodSecurity // habilita @PreAuthorize (p. ej. backoffice SUPERADMIN)
 public class SecurityConfig {
 
     @Value("${app.cors.allowed-origin}")
@@ -52,6 +54,7 @@ public class SecurityConfig {
                         // Públicos: login y alta de clínica (onboarding del tenant).
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.POST, "/clinicas").permitAll()
+                        .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
                         // Todo lo demás requiere JWT válido.
                         .anyRequest().authenticated())
                 .exceptionHandling(eh -> eh.authenticationEntryPoint(unauthorizedEntryPoint()))

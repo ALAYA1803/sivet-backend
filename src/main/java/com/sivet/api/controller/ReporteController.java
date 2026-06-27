@@ -39,6 +39,24 @@ public class ReporteController {
         DocumentResult doc = documentService.reporteVentasExcel(
                 SecurityUtils.currentTenantId(), rango, desde, hasta);
 
+        return descarga(doc);
+    }
+
+    /** GET /reportes/pacientes.xlsx — listado de mascotas del tenant. */
+    @GetMapping("/pacientes.xlsx")
+    public ResponseEntity<byte[]> pacientesExcel() {
+        DocumentResult doc = documentService.reportePacientesExcel(SecurityUtils.currentTenantId());
+        return descarga(doc);
+    }
+
+    /** GET /reportes/catalogo.xlsx — listado de productos del tenant. */
+    @GetMapping("/catalogo.xlsx")
+    public ResponseEntity<byte[]> catalogoExcel() {
+        DocumentResult doc = documentService.reporteCatalogoExcel(SecurityUtils.currentTenantId());
+        return descarga(doc);
+    }
+
+    private ResponseEntity<byte[]> descarga(DocumentResult doc) {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(XLSX_MIME))
                 .header(HttpHeaders.CONTENT_DISPOSITION,

@@ -4,10 +4,13 @@ import com.sivet.api.domain.entity.Atencion;
 import com.sivet.api.domain.entity.Cliente;
 import com.sivet.api.domain.entity.Clinica;
 import com.sivet.api.domain.entity.Mascota;
+import com.sivet.api.domain.entity.Producto;
 import com.sivet.api.domain.entity.Receta;
 import com.sivet.api.domain.entity.Venta;
 import com.sivet.api.exception.ResourceNotFoundException;
 import com.sivet.api.repository.ClinicaRepository;
+import com.sivet.api.repository.MascotaRepository;
+import com.sivet.api.repository.ProductoRepository;
 import com.sivet.api.repository.RecetaRepository;
 import com.sivet.api.repository.VentaRepository;
 import com.sivet.api.service.document.DocumentResult;
@@ -31,6 +34,8 @@ public class DocumentServiceImpl implements DocumentService {
     private final VentaRepository ventaRepository;
     private final RecetaRepository recetaRepository;
     private final ClinicaRepository clinicaRepository;
+    private final MascotaRepository mascotaRepository;
+    private final ProductoRepository productoRepository;
     private final PdfDocumentGenerator pdfGenerator;
     private final ExcelDocumentGenerator excelGenerator;
 
@@ -78,6 +83,26 @@ public class DocumentServiceImpl implements DocumentService {
         byte[] xlsx = excelGenerator.reporteVentas(clinica, ventas, inicio, fin);
         String sufijo = (rango != null && !rango.isBlank()) ? rango : (inicio + "_" + fin);
         return new DocumentResult(xlsx, "reporte-ventas-" + sufijo + ".xlsx");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DocumentResult reportePacientesExcel(UUID clinicaId) {
+        Clinica clinica = clinicaOrThrow(clinicaId);
+        List<Mascota> mascotas = mascotaRepository.findByClinica_Id(clinicaId);
+
+        byte[] xlsx = excelGenerator.reportePacientes(clinica, mascotas);
+        return new DocumentResult(xlsx, "reporte-pacientes.xlsx");
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public DocumentResult reporteCatalogoExcel(UUID clinicaId) {
+        Clinica clinica = clinicaOrThrow(clinicaId);
+        List<Producto> productos = productoRepository.findByClinica_Id(clinicaId);
+
+        byte[] xlsx = excelGenerator.reporteCatalogo(clinica, productos);
+        return new DocumentResult(xlsx, "reporte-catalogo.xlsx");
     }
 
     /** Determina [inicio, fin] según rango con prioridad, luego desde/hasta, luego mes actual. */

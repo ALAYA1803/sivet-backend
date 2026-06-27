@@ -22,4 +22,10 @@ public interface DocumentService {
      * si nada se indica, se reporta el mes en curso.
      */
     DocumentResult reporteVentasExcel(UUID clinicaId, String rango, LocalDate desde, LocalDate hasta);
+
+    /** Excel con el listado de pacientes (mascotas) del tenant (§4.3). */
+    DocumentResult reportePacientesExcel(UUID clinicaId);
+
+    /** Excel con el catálogo de productos/servicios del tenant (§4.3). */
+    DocumentResult reporteCatalogoExcel(UUID clinicaId);
 }

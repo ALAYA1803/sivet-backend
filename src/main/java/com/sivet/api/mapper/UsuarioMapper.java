@@ -18,6 +18,7 @@ public class UsuarioMapper {
                 u.getUsername(),
                 u.getNombre(),
                 u.getRol(),
+                u.isRequiereCambioPassword(),
                 u.getClinica().getId()
         );
     }

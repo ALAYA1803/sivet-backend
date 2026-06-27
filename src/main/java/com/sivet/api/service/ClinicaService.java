@@ -1,5 +1,6 @@
 package com.sivet.api.service;
 
+import com.sivet.api.dto.request.ClinicaPatchRequest;
 import com.sivet.api.dto.request.ClinicaRequest;
 import com.sivet.api.dto.response.ClinicaResponse;
 
@@ -15,4 +16,7 @@ public interface ClinicaService {
     ClinicaResponse obtener(UUID id);
 
     ClinicaResponse actualizar(UUID id, ClinicaRequest request);
+
+    /** Actualización parcial (PATCH): solo aplica los campos informados. */
+    ClinicaResponse actualizarParcial(UUID id, ClinicaPatchRequest request);
 }

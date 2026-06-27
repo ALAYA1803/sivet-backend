@@ -10,6 +10,7 @@ public record UsuarioResponse(
         String username,
         String nombre,
         String rol,
+        boolean requiereCambioPassword,
         UUID clinicaId
 ) {
 }

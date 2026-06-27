@@ -1,6 +1,8 @@
 package com.sivet.api.service.document;
 
 import com.sivet.api.domain.entity.Clinica;
+import com.sivet.api.domain.entity.Mascota;
+import com.sivet.api.domain.entity.Producto;
 import com.sivet.api.domain.entity.Venta;
 import com.sivet.api.domain.entity.VentaItem;
 import com.sivet.api.domain.enums.EstadoVenta;
@@ -46,6 +48,98 @@ public class ExcelDocumentGenerator {
 
             crearHojaDetalle(wb, headerStyle, moneyStyle, titleStyle, clinica, ventas, desde, hasta);
             crearHojaKpis(wb, headerStyle, moneyStyle, titleStyle, ventas);
+
+            wb.write(out);
+            return out.toByteArray();
+        } catch (IOException ex) {
+            throw new BusinessException("No se pudo generar el reporte Excel: " + ex.getMessage());
+        }
+    }
+
+    /** Listado de pacientes (mascotas) del tenant para descarga masiva. */
+    public byte[] reportePacientes(Clinica clinica, List<Mascota> mascotas) {
+        try (Workbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            CellStyle headerStyle = headerStyle(wb);
+            CellStyle titleStyle = titleStyle(wb);
+
+            Sheet sheet = wb.createSheet("Pacientes");
+
+            Row t1 = sheet.createRow(0);
+            celdaTexto(t1, 0, "Listado de Pacientes · " + clinica.getNombre(), titleStyle);
+            Row t2 = sheet.createRow(1);
+            celdaTexto(t2, 0, "Total: " + mascotas.size(), null);
+
+            String[] cols = {"Nombre", "Especie", "Raza", "Sexo", "Edad", "Peso (kg)",
+                    "Color", "Esterilizada", "Microchip", "Dueño"};
+            Row head = sheet.createRow(3);
+            for (int i = 0; i < cols.length; i++) {
+                celdaTexto(head, i, cols[i], headerStyle);
+            }
+
+            int fila = 4;
+            for (Mascota m : mascotas) {
+                Row r = sheet.createRow(fila++);
+                celdaTexto(r, 0, m.getNombre(), null);
+                celdaTexto(r, 1, m.getEspecie() != null ? m.getEspecie().getValue() : "", null);
+                celdaTexto(r, 2, m.getRaza(), null);
+                celdaTexto(r, 3, m.getSexo() != null ? m.getSexo().getValue() : "", null);
+                celdaTexto(r, 4, m.getEdad(), null);
+                celdaNumero(r, 5, m.getPeso());
+                celdaTexto(r, 6, m.getColor(), null);
+                celdaTexto(r, 7, m.isEsterilizada() ? "Sí" : "No", null);
+                celdaTexto(r, 8, m.getMicrochip(), null);
+                celdaTexto(r, 9, m.getCliente() != null ? m.getCliente().getNombre() : "", null);
+            }
+
+            for (int i = 0; i < cols.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
+
+            wb.write(out);
+            return out.toByteArray();
+        } catch (IOException ex) {
+            throw new BusinessException("No se pudo generar el reporte Excel: " + ex.getMessage());
+        }
+    }
+
+    /** Listado del catálogo (productos/servicios) del tenant para descarga masiva. */
+    public byte[] reporteCatalogo(Clinica clinica, List<Producto> productos) {
+        try (Workbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+
+            CellStyle headerStyle = headerStyle(wb);
+            CellStyle moneyStyle = moneyStyle(wb);
+            CellStyle titleStyle = titleStyle(wb);
+
+            Sheet sheet = wb.createSheet("Catálogo");
+
+            Row t1 = sheet.createRow(0);
+            celdaTexto(t1, 0, "Catálogo de Productos · " + clinica.getNombre(), titleStyle);
+            Row t2 = sheet.createRow(1);
+            celdaTexto(t2, 0, "Total: " + productos.size(), null);
+
+            String[] cols = {"Código", "Nombre", "Categoría", "Precio (S/)", "Stock", "Stock mín.", "Unidad"};
+            Row head = sheet.createRow(3);
+            for (int i = 0; i < cols.length; i++) {
+                celdaTexto(head, i, cols[i], headerStyle);
+            }
+
+            int fila = 4;
+            for (Producto p : productos) {
+                Row r = sheet.createRow(fila++);
+                celdaTexto(r, 0, p.getCodigo(), null);
+                celdaTexto(r, 1, p.getNombre(), null);
+                celdaTexto(r, 2, p.getCategoria() != null ? p.getCategoria().getValue() : "", null);
+                celdaMoneda(r, 3, p.getPrecio(), moneyStyle);
+                // Servicios no llevan inventario (stock/stockMin null): se dejan en blanco.
+                celdaEntero(r, 4, p.getStock());
+                celdaEntero(r, 5, p.getStockMin());
+                celdaTexto(r, 6, p.getUnidad(), null);
+            }
+
+            for (int i = 0; i < cols.length; i++) {
+                sheet.autoSizeColumn(i);
+            }
 
             wb.write(out);
             return out.toByteArray();
@@ -196,6 +290,22 @@ public class ExcelDocumentGenerator {
         c.setCellValue(valor != null ? valor.doubleValue() : 0d);
         if (style != null) {
             c.setCellStyle(style);
+        }
+    }
+
+    /** Número decimal; deja la celda vacía si el valor es null. */
+    private void celdaNumero(Row row, int col, Double valor) {
+        Cell c = row.createCell(col);
+        if (valor != null) {
+            c.setCellValue(valor);
+        }
+    }
+
+    /** Entero; deja la celda vacía si el valor es null (p. ej. stock de un servicio). */
+    private void celdaEntero(Row row, int col, Integer valor) {
+        Cell c = row.createCell(col);
+        if (valor != null) {
+            c.setCellValue(valor);
         }
     }
 }

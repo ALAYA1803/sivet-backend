@@ -4,6 +4,7 @@ import com.sivet.api.domain.entity.Clinica;
 import com.sivet.api.domain.entity.Usuario;
 import com.sivet.api.repository.ClinicaRepository;
 import com.sivet.api.repository.UsuarioRepository;
+import com.sivet.api.security.Roles;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -45,13 +46,24 @@ public class DataSeeder implements CommandLineRunner {
         admin.setUsername("admin");
         admin.setPassword(passwordEncoder.encode("admin123"));
         admin.setNombre("Dra. Demo");
-        admin.setRol("Admin");
+        admin.setRol(Roles.ADMIN_CLINICA);
         admin.setClinica(clinica);
         usuarioRepository.save(admin);
 
+        // SUPERADMIN (dueño del SaaS) para operar el backoffice B2B (/admin-sivet).
+        // La entidad exige un tenant; lo asociamos a la clínica demo por simplicidad.
+        Usuario superadmin = new Usuario();
+        superadmin.setUsername("superadmin");
+        superadmin.setPassword(passwordEncoder.encode("super123"));
+        superadmin.setNombre("Dueño SIVET");
+        superadmin.setRol(Roles.SUPERADMIN);
+        superadmin.setClinica(clinica);
+        usuarioRepository.save(superadmin);
+
         log.info("==================== SIVET · DATOS DEMO SEMBRADOS ====================");
-        log.info(" Login:      POST /auth/login  {{ \"credencial\": \"admin\", \"password\": \"admin123\" }}");
-        log.info(" Tenant ID:  {}  (usar en el header X-Tenant-ID)", clinica.getId());
+        log.info(" Login admin:      POST /auth/login  {{ \"credencial\": \"admin\", \"password\": \"admin123\" }}");
+        log.info(" Login superadmin: POST /auth/login  {{ \"credencial\": \"superadmin\", \"password\": \"super123\" }}");
+        log.info(" Tenant ID:        {}  (usar en el header X-Tenant-ID)", clinica.getId());
         log.info("=====================================================================");
     }
 }

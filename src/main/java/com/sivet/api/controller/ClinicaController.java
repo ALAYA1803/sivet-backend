@@ -1,7 +1,9 @@
 package com.sivet.api.controller;
 
+import com.sivet.api.dto.request.ClinicaPatchRequest;
 import com.sivet.api.dto.request.ClinicaRequest;
 import com.sivet.api.dto.response.ClinicaResponse;
+import com.sivet.api.exception.ForbiddenException;
 import com.sivet.api.exception.ResourceNotFoundException;
 import com.sivet.api.security.SecurityUtils;
 import com.sivet.api.service.ClinicaService;
@@ -9,6 +11,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,5 +46,18 @@ public class ClinicaController {
             throw ResourceNotFoundException.of("Clínica", id);
         }
         return clinicaService.obtener(id);
+    }
+
+    /**
+     * Actualización parcial de la clínica. Solo el propio tenant puede modificarse:
+     * si el {@code id} de la URL no coincide con el {@code veterinaria_id} del token ⇒ 403.
+     */
+    @PatchMapping("/{id}")
+    public ClinicaResponse actualizar(@PathVariable UUID id,
+                                      @Valid @RequestBody ClinicaPatchRequest request) {
+        if (!id.equals(SecurityUtils.currentUser().veterinariaId())) {
+            throw new ForbiddenException("No puede modificar una clínica que no es la suya");
+        }
+        return clinicaService.actualizarParcial(id, request);
     }
 }

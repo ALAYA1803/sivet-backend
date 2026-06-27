@@ -40,6 +40,6 @@ public class AuthServiceImpl implements AuthService {
                 usuario.getRol(),
                 usuario.getClinica().getId());
 
-        return new LoginResponse(token, payload);
+        return new LoginResponse(token, payload, usuario.isRequiereCambioPassword());
     }
 }
