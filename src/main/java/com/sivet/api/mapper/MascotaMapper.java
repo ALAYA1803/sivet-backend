@@ -25,6 +25,9 @@ public class MascotaMapper {
         m.setFoto(req.foto());
         m.setEsterilizada(Boolean.TRUE.equals(req.esterilizada()));
         m.setMicrochip(req.microchip());
+        m.setVacunacion(req.vacunacion());
+        m.setAlergias(req.alergias());
+        m.setNotas(req.notas());
         m.setCliente(cliente);
         m.setClinica(clinica);
         return m;
@@ -43,7 +46,10 @@ public class MascotaMapper {
                 m.getCliente().getId(),
                 m.getFoto(),
                 m.isEsterilizada(),
-                m.getMicrochip()
+                m.getMicrochip(),
+                m.getVacunacion(),
+                m.getAlergias(),
+                m.getNotas()
         );
     }
 }

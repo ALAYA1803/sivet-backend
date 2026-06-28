@@ -20,4 +20,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, UUID> {
 
     /** Personal de una clínica (tenant). */
     List<Usuario> findByClinica_Id(UUID clinicaId);
+
+    /**
+     * Personal de una clínica (tenant) excluyendo estrictamente un rol.
+     * Se usa para listar empleados sin filtrar al dueño del SaaS (SUPERADMIN).
+     */
+    List<Usuario> findByClinica_IdAndRolNot(UUID clinicaId, String rol);
 }

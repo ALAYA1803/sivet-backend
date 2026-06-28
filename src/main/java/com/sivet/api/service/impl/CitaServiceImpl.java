@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -75,6 +76,13 @@ public class CitaServiceImpl implements CitaService {
         if (!FRANJAS_VALIDAS.contains(request.hora())) {
             throw new BusinessException(
                     "Hora fuera de las franjas válidas (09:00–18:00, bloques de 30 min): " + request.hora());
+        }
+        // No se puede agendar en el pasado: si la cita es para hoy, la hora no puede haber pasado.
+        if (request.fecha().isEqual(LocalDate.now())
+                && LocalTime.parse(request.hora()).isBefore(LocalTime.now())) {
+            throw new BusinessException(
+                    "No se puede agendar una cita en el pasado: la hora " + request.hora()
+                            + " ya pasó para hoy");
         }
         boolean ocupada = citaRepository.existsByClinica_IdAndFechaAndHoraAndEstadoNot(
                 clinicaId, request.fecha(), request.hora(), EstadoCita.CANCELADA);

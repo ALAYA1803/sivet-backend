@@ -11,7 +11,7 @@ import java.util.UUID;
 /**
  * Datos de entrada para crear una mascota. El tenant lo estampa el backend.
  * <p>{@code foto} es opcional (String o null) — no se manejan archivos.
- * {@code microchip} es opcional.
+ * {@code microchip}, {@code vacunacion}, {@code alergias} y {@code notas} son opcionales.
  */
 public record MascotaRequest(
 
@@ -35,6 +35,12 @@ public record MascotaRequest(
 
         @NotNull Boolean esterilizada,
 
-        String microchip
+        String microchip,
+
+        String vacunacion,
+
+        String alergias,
+
+        String notas
 ) {
 }

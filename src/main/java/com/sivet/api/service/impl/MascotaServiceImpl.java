@@ -76,6 +76,9 @@ public class MascotaServiceImpl implements MascotaService {
         mascota.setFoto(request.foto());
         mascota.setEsterilizada(Boolean.TRUE.equals(request.esterilizada()));
         mascota.setMicrochip(request.microchip());
+        mascota.setVacunacion(request.vacunacion());
+        mascota.setAlergias(request.alergias());
+        mascota.setNotas(request.notas());
         mascota.setCliente(cliente);
         return mascotaMapper.toResponse(mascotaRepository.save(mascota));
     }

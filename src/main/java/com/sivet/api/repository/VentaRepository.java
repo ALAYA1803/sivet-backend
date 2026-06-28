@@ -23,5 +23,9 @@ public interface VentaRepository extends JpaRepository<Venta, UUID> {
 
     List<Venta> findByClinica_IdAndFechaBetween(UUID clinicaId, LocalDateTime desde, LocalDateTime hasta);
 
+    /** Ventas de un estado dentro de un rango (p. ej. KPI "vendidos hoy": completadas del día). */
+    List<Venta> findByClinica_IdAndEstadoAndFechaBetween(
+            UUID clinicaId, EstadoVenta estado, LocalDateTime desde, LocalDateTime hasta);
+
     Optional<Venta> findByIdAndClinica_Id(UUID id, UUID clinicaId);
 }

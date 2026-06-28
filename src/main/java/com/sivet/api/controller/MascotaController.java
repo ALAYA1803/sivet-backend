@@ -7,6 +7,7 @@ import com.sivet.api.service.MascotaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -45,12 +46,16 @@ public class MascotaController {
         return mascotaService.crear(SecurityUtils.currentTenantId(), request);
     }
 
+    /** Modificar paciente: solo el admin de la clínica o un veterinario. */
     @PutMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN_CLINICA', 'Veterinario')")
     public MascotaResponse actualizar(@PathVariable UUID id, @Valid @RequestBody MascotaRequest request) {
         return mascotaService.actualizar(SecurityUtils.currentTenantId(), id, request);
     }
 
+    /** Eliminar paciente: solo el admin de la clínica. */
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN_CLINICA')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void eliminar(@PathVariable UUID id) {
         mascotaService.eliminar(SecurityUtils.currentTenantId(), id);

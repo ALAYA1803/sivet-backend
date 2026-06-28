@@ -7,6 +7,8 @@ import com.sivet.api.service.AtencionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,8 +22,8 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Atenciones (historia clínica). Evento inmutable: solo lectura y registro
- * (incluye creación atómica de receta vinculada, §3.4).
+ * Atenciones (historia clínica): lectura, registro (con creación atómica de receta
+ * vinculada, §3.4) y eliminación administrativa (solo ADMIN_CLINICA) aislada por tenant.
  */
 @RestController
 @RequestMapping("/atenciones")
@@ -45,5 +47,13 @@ public class AtencionController {
     @ResponseStatus(HttpStatus.CREATED)
     public AtencionResponse registrar(@Valid @RequestBody AtencionRequest request) {
         return atencionService.registrar(SecurityUtils.currentTenantId(), request);
+    }
+
+    /** Eliminar atención (aislada por tenant): solo el admin de la clínica. */
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN_CLINICA')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void eliminar(@PathVariable UUID id) {
+        atencionService.eliminar(SecurityUtils.currentTenantId(), id);
     }
 }

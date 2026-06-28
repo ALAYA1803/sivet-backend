@@ -107,7 +107,8 @@ public class UsuarioServiceImpl implements UsuarioService {
     @Override
     @Transactional(readOnly = true)
     public List<UsuarioResponse> listarEmpleados(UUID clinicaId) {
-        return usuarioRepository.findByClinica_Id(clinicaId).stream()
+        // Excluye al dueño del SaaS (SUPERADMIN): no es personal de la clínica.
+        return usuarioRepository.findByClinica_IdAndRolNot(clinicaId, Roles.SUPERADMIN).stream()
                 .map(usuarioMapper::toResponse)
                 .toList();
     }

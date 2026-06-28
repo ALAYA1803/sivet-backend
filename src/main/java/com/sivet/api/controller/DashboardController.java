@@ -3,6 +3,7 @@ package com.sivet.api.controller;
 import com.sivet.api.dto.response.CitaHoyResponse;
 import com.sivet.api.dto.response.FlujoPacienteResponse;
 import com.sivet.api.dto.response.ResumenMetodoPagoResponse;
+import com.sivet.api.dto.response.VendidosHoyResponse;
 import com.sivet.api.security.SecurityUtils;
 import com.sivet.api.service.DashboardService;
 import lombok.RequiredArgsConstructor;
@@ -34,5 +35,10 @@ public class DashboardController {
     @GetMapping("/citasHoy")
     public List<CitaHoyResponse> citasHoy() {
         return dashboardService.citasHoy(SecurityUtils.currentTenantId());
+    }
+
+    @GetMapping("/vendidosHoy")
+    public VendidosHoyResponse vendidosHoy() {
+        return dashboardService.vendidosHoy(SecurityUtils.currentTenantId());
     }
 }

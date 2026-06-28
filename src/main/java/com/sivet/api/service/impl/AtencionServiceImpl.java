@@ -113,6 +113,26 @@ public class AtencionServiceImpl implements AtencionService {
         recetaRepository.save(receta);
     }
 
+    /**
+     * Borrado físico de la atención respetando el aislamiento por tenant. Si tiene una
+     * receta enlazada, se rompe primero el vínculo (FK cruzada atención↔receta) y se
+     * elimina la receta antes que la atención para no violar la integridad referencial.
+     */
+    @Override
+    @Transactional
+    public void eliminar(UUID clinicaId, UUID id) {
+        Atencion atencion = getOrThrow(clinicaId, id); // valida que pertenezca a la clínica del token
+
+        Receta receta = atencion.getReceta();
+        if (receta != null) {
+            atencion.setReceta(null);
+            atencionRepository.saveAndFlush(atencion); // UPDATE atenciones SET receta_id = null
+            recetaRepository.delete(receta);           // luego elimina la receta (y sus ítems)
+        }
+
+        atencionRepository.delete(atencion);
+    }
+
     private Atencion getOrThrow(UUID clinicaId, UUID id) {
         return atencionRepository.findByIdAndClinica_Id(id, clinicaId)
                 .orElseThrow(() -> ResourceNotFoundException.of("Atención", id));

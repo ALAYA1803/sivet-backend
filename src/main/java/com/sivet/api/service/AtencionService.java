@@ -7,8 +7,9 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * Gestión de atenciones (historia clínica), aislada por tenant. La atención es
- * inmutable (sin update/delete). Registra atención + receta de forma atómica (§3.4).
+ * Gestión de atenciones (historia clínica), aislada por tenant. La atención no se
+ * edita (sin update); admite eliminación administrativa. Registra atención + receta
+ * de forma atómica (§3.4).
  */
 public interface AtencionService {
 
@@ -25,4 +26,10 @@ public interface AtencionService {
      * receta existente del tenant.
      */
     AtencionResponse registrar(UUID clinicaId, AtencionRequest request);
+
+    /**
+     * Elimina una atención del tenant (y su receta vinculada, si la tiene).
+     * Valida que la atención pertenezca a la clínica indicada (aislamiento).
+     */
+    void eliminar(UUID clinicaId, UUID id);
 }

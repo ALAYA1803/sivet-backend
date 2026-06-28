@@ -73,6 +73,18 @@ public class Mascota {
     @Column
     private String microchip;
 
+    /** Historial de vacunación (texto libre). Opcional: lo captura el formulario clínico. */
+    @Column(columnDefinition = "text")
+    private String vacunacion;
+
+    /** Alergias conocidas (texto libre). Opcional. */
+    @Column(columnDefinition = "text")
+    private String alergias;
+
+    /** Notas clínicas adicionales (texto libre). Opcional. */
+    @Column(columnDefinition = "text")
+    private String notas;
+
     /** Dueño (FK → clientes.id). */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "cliente_id", nullable = false)

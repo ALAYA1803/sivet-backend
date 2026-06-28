@@ -21,6 +21,9 @@ public record MascotaResponse(
         UUID clienteId,
         String foto,
         boolean esterilizada,
-        String microchip
+        String microchip,
+        String vacunacion,
+        String alergias,
+        String notas
 ) {
 }

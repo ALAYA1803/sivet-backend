@@ -9,6 +9,8 @@ import com.sivet.api.domain.enums.MetodoPago;
 import com.sivet.api.dto.response.CitaHoyResponse;
 import com.sivet.api.dto.response.FlujoPacienteResponse;
 import com.sivet.api.dto.response.ResumenMetodoPagoResponse;
+import com.sivet.api.dto.response.VendidosHoyResponse;
+import com.sivet.api.domain.entity.VentaItem;
 import com.sivet.api.repository.AtencionRepository;
 import com.sivet.api.repository.CitaRepository;
 import com.sivet.api.repository.VentaRepository;
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -124,6 +128,27 @@ public class DashboardServiceImpl implements DashboardService {
                         c.getMotivo(),
                         ""))
                 .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public VendidosHoyResponse vendidosHoy(UUID clinicaId) {
+        LocalDate hoy = LocalDate.now();
+        // Rango estricto del día: [00:00:00, 23:59:59.999999999].
+        LocalDateTime desde = hoy.atStartOfDay();
+        LocalDateTime hasta = hoy.atTime(LocalTime.MAX);
+
+        // Solo ventas completadas creadas hoy.
+        List<Venta> ventasHoy = ventaRepository.findByClinica_IdAndEstadoAndFechaBetween(
+                clinicaId, EstadoVenta.COMPLETADA, desde, hasta);
+
+        // KPI = suma de las cantidades de los ítems (unidades vendidas), no el nº de ventas.
+        long unidades = ventasHoy.stream()
+                .flatMap(v -> v.getItems().stream())
+                .mapToLong(VentaItem::getCantidad)
+                .sum();
+
+        return new VendidosHoyResponse(unidades, ventasHoy.size());
     }
 
     /** Etiqueta de día tipo "Mié 20" (es-PE). */
